@@ -1,0 +1,125 @@
+# ─────────────────────────────────────────────────────────────
+# .NET / C#
+# ─────────────────────────────────────────────────────────────
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# Артефакты сборки
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+build/
+bld/
+publish/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# ─────────────────────────────────────────────────────────────
+# Visual Studio / VS Code / Rider
+# ─────────────────────────────────────────────────────────────
+.vs/
+.vscode/
+.idea/
+*.swp
+*~
+.vsconfig
+.vscode/*
+!.vscode/extensions.json
+
+# ─────────────────────────────────────────────────────────────
+# NuGet
+# ─────────────────────────────────────────────────────────────
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ─────────────────────────────────────────────────────────────
+# Docker
+# ─────────────────────────────────────────────────────────────
+*.pid
+docker-compose.override.yml
+.docker/
+
+# ─────────────────────────────────────────────────────────────
+# Конфигурация / секреты
+# ─────────────────────────────────────────────────────────────
+appsettings.Local.json
+appsettings.Production.json
+appsettings.Development.json
+*.secrets.json
+.env
+.env.*
+!.env.example
+
+# ─────────────────────────────────────────────────────────────
+# Пользовательские данные / БД
+# ─────────────────────────────────────────────────────────────
+*.mdf
+*.ldf
+*.ndf
+pgdata/
+*.sqlite
+*.db
+
+# ─────────────────────────────────────────────────────────────
+# OS
+# ─────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ─────────────────────────────────────────────────────────────
+# Временные файлы
+# ─────────────────────────────────────────────────────────────
+*.bak
+*.old
+*.orig
+*.rej
+*.tmp
+tmp
+*.$*
