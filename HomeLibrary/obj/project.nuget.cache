@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "dgSpecHash": "7sOieqz2xR8=",
+  "success": true,
+  "projectFilePath": "C:\\dev\\projects\\charp\\HomeLibrary\\HomeLibrary\\HomeLibrary.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Aleksandr\\.nuget\\packages\\dapper\\2.1.86\\dapper.2.1.86.nupkg.sha512",
+    "C:\\Users\\Aleksandr\\.nuget\\packages\\microsoft.extensions.apidescription.server\\10.0.0\\microsoft.extensions.apidescription.server.10.0.0.nupkg.sha512",
+    "C:\\Users\\Aleksandr\\.nuget\\packages\\microsoft.openapi\\2.7.5\\microsoft.openapi.2.7.5.nupkg.sha512",
+    "C:\\Users\\Aleksandr\\.nuget\\packages\\npgsql\\10.0.3\\npgsql.10.0.3.nupkg.sha512",
+    "C:\\Users\\Aleksandr\\.nuget\\packages\\swashbuckle.aspnetcore\\10.2.3\\swashbuckle.aspnetcore.10.2.3.nupkg.sha512",
+    "C:\\Users\\Aleksandr\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\10.2.3\\swashbuckle.aspnetcore.swagger.10.2.3.nupkg.sha512",
+    "C:\\Users\\Aleksandr\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\10.2.3\\swashbuckle.aspnetcore.swaggergen.10.2.3.nupkg.sha512",
+    "C:\\Users\\Aleksandr\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\10.2.3\\swashbuckle.aspnetcore.swaggerui.10.2.3.nupkg.sha512"
+  ],
+  "logs": []
+}
