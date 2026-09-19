@@ -1,148 +1,184 @@
-document.addEventListener('DOMContentLoaded', () => {
+$(function () {
+  // ─────────────────────────────────────────────────────────
+  // 1. Инициализация редактора Trumbowyg
+  // ─────────────────────────────────────────────────────────
+  const $editor = $("#editor");
 
-    // ─── Инициализация редактора Quill ─────────────────
-    const quill = new Quill('#editor', {
-        theme: 'snow',
-        placeholder: 'Введите оглавление книги…',
-        modules: {
-            toolbar: [
-                [{ header: [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link', 'blockquote'],
-                ['clean']
-            ]
-        }
-    });
+  $editor.trumbowyg({
+    lang: "ru",
+    btns: [
+      ["viewHTML"],
+      ["undo", "redo"],
+      ["formatting"],
+      ["strong", "em", "del"],
+      ["superscript", "subscript"],
+      ["link"],
+      ["insertImage"],
+      ["justifyLeft", "justifyCenter", "justifyRight", "justifyFull"],
+      ["unorderedList", "orderedList"],
+      ["horizontalRule"],
+      ["removeformat"],
+      ["fullscreen"],
+    ],
+    // Если иконки не подгружаются — укажите путь явно:
+    // svgPath: '/lib/trumbowyg/ui/icons.svg',
+    autogrow: true,
+  });
 
-    // ─── Элементы страницы ─────────────────────────────
-    const titleEl     = document.getElementById('title');
-    const authorEl    = document.getElementById('author');
-    const yearEl      = document.getElementById('year');
-    const saveBtn     = document.getElementById('saveBtn');
-    const deleteBtn   = document.getElementById('deleteBtn');
-    const statusEl    = document.getElementById('status');
-    const pageTitle   = document.getElementById('pageTitle');
+  // ─────────────────────────────────────────────────────────
+  // 2. Ссылки на элементы формы (jQuery-объекты)
+  // ─────────────────────────────────────────────────────────
+  const $titleEl = $("#title");
+  const $authorEl = $("#author");
+  const $yearEl = $("#year");
+  const $saveBtn = $("#saveBtn");
+  const $deleteBtn = $("#deleteBtn");
+  const $statusEl = $("#status");
+  const $pageTitle = $("#pageTitle");
 
-    // ─── Определяем id из URL ──────────────────────────
-    const params = new URLSearchParams(location.search);
-    const bookId = params.get('id');
+  // ID книги из URL (?id=5)
+  const bookId = new URLSearchParams(location.search).get("id");
 
-    // ─── Загрузка книги при редактировании ─────────────
-    async function loadBook() {
-        if (!bookId) return;
+  // ─────────────────────────────────────────────────────────
+  // 3. Загрузка книги при редактировании
+  // ─────────────────────────────────────────────────────────
+  function loadBook() {
+    if (!bookId) return;
 
-        setStatus('Загрузка…', 'loading');
-        pageTitle.textContent = 'Редактирование книги';
-        deleteBtn.style.display = 'inline-block';
+    setStatus("Загрузка…", "loading");
+    $pageTitle.text("Редактирование книги");
+    $deleteBtn.show();
 
-        try {
-            const book = await Api.get(bookId);
-            titleEl.value  = book.title       ?? '';
-            authorEl.value = book.author      ?? '';
-            yearEl.value   = book.publishYear ?? '';
+    Api.get(bookId)
+      .then(function (book) {
+        $titleEl.val(book.title ?? "");
+        $authorEl.val(book.author ?? "");
+        $yearEl.val(book.publishYear ?? "");
 
-            // tocContent приходит как XML-строка, напр. "<toc><h1>…</h1></toc>"
-            // Пытаемся извлечь внутренний HTML, если он обёрнут в <toc>
-            const html = extractTocHtml(book.tocContent);
-            quill.root.innerHTML = html || '';
+        // Извлекаем HTML из XML-обёртки и ставим в редактор
+        const html = extractTocHtml(book.tocContent);
+        $editor.trumbowyg("html", html || "");
 
-            setStatus('', '');
-        } catch (err) {
-            setStatus('Не удалось загрузить книгу: ' + err.message, 'error');
-        }
+        setStatus("", "");
+      })
+      .catch(function (err) {
+        setStatus("Не удалось загрузить книгу: " + err.message, "error");
+      });
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // 4. Сохранение (создание или обновление)
+  // ─────────────────────────────────────────────────────────
+  function saveBook() {
+    const title = ($titleEl.val() || "").trim();
+    const author = ($authorEl.val() || "").trim();
+
+    if (!title || !author) {
+      setStatus("Заполните обязательные поля: Название и Автор", "error");
+      return;
     }
 
-    // ─── Сохранение ────────────────────────────────────
-    async function saveBook() {
-        const title  = titleEl.value.trim();
-        const author = authorEl.value.trim();
+    // HTML из редактора
+    const editorHtml = $editor.trumbowyg("html") || "";
 
-        if (!title || !author) {
-            setStatus('Заполните обязательные поля: Название и Автор', 'error');
-            return;
+    // Оборачиваем в XML с CDATA. Экранируем закрывающий ]]> на всякий случай.
+    const safe = editorHtml.replace(/\]\]>/g, "]]]]><![CDATA[>");
+    const tocXml = `<toc><![CDATA[${safe}]]></toc>`;
+
+    const payload = {
+      title: title,
+      author: author,
+      publishYear: $yearEl.val() ? parseInt($yearEl.val(), 10) : null,
+      tocContent: tocXml,
+    };
+
+    setStatus("Сохранение…", "loading");
+    $saveBtn.prop("disabled", true);
+
+    const promise = bookId ? Api.update(bookId, payload) : Api.create(payload);
+
+    promise
+      .then(function (result) {
+        if (bookId) {
+          setStatus("Изменения сохранены", "success");
+        } else {
+          setStatus("Книга создана", "success");
+          setTimeout(function () {
+            location.href = `/book.html?id=${result.id}`;
+          }, 600);
         }
+      })
+      .catch(function (err) {
+        setStatus("Ошибка сохранения: " + err.message, "error");
+      })
+      .always(function () {
+        $saveBtn.prop("disabled", false);
+      });
+  }
 
-        // Оборачиваем HTML редактора в XML-контейнер.
-        // CDATA защищает от невалидных для XML символов (<br>, &nbsp; и т.п.),
-        // но тогда tocContent придёт как сырая строка — об этом ниже.
-        // Здесь используем безопасный вариант: сериализуем HTML как escaped-текст
-        // внутри <toc>…</toc>. Quill выдаёт валидный HTML5.
-        const editorHtml = quill.root.innerHTML;
-        const tocXml = `<toc>${editorHtml}</toc>`;
+  // ─────────────────────────────────────────────────────────
+  // 5. Удаление
+  // ─────────────────────────────────────────────────────────
+  function deleteBook() {
+    if (!bookId) return;
+    if (!confirm("Удалить эту книгу?")) return;
 
-        const payload = {
-            title,
-            author,
-            publishYear: yearEl.value ? parseInt(yearEl.value, 10) : null,
-            tocContent:  tocXml
-        };
+    setStatus("Удаление…", "loading");
+    Api.remove(bookId)
+      .then(function () {
+        setStatus("Книга удалена", "success");
+        setTimeout(function () {
+          location.href = "/";
+        }, 500);
+      })
+      .catch(function (err) {
+        setStatus("Ошибка удаления: " + err.message, "error");
+      });
+  }
 
-        setStatus('Сохранение…', 'loading');
-        saveBtn.disabled = true;
+  // ─────────────────────────────────────────────────────────
+  // 6. Вспомогательные
+  // ─────────────────────────────────────────────────────────
+  function setStatus(text, cls) {
+    $statusEl.text(text || "").attr("class", "status " + (cls || ""));
+  }
 
-        try {
-            if (bookId) {
-                await Api.update(bookId, payload);
-                setStatus('Изменения сохранены', 'success');
-            } else {
-                const created = await Api.create(payload);
-                setStatus('Книга создана', 'success');
-                // Переходим в режим редактирования только что созданной книги
-                setTimeout(() => {
-                    location.href = `/book.html?id=${created.id}`;
-                }, 600);
-            }
-        } catch (err) {
-            setStatus('Ошибка сохранения: ' + err.message, 'error');
-        } finally {
-            saveBtn.disabled = false;
-        }
+  // Извлекаем содержимое <toc>…</toc> как HTML
+  function extractTocHtml(tocContent) {
+    if (!tocContent) return "";
+    try {
+      const doc = new DOMParser().parseFromString(
+        tocContent,
+        "application/xml",
+      );
+      const toc = doc.querySelector("toc");
+      if (toc) return toc.textContent || toc.innerHTML || "";
+    } catch (_) {
+      /* ignore */
     }
 
-    // ─── Удаление ──────────────────────────────────────
-    async function deleteBook() {
-        if (!bookId) return;
-        if (!confirm('Удалить эту книгу?')) return;
+    // Фолбэк через jQuery
+    const $tmp = $("<div>").html(tocContent);
+    const $toc = $tmp.find("toc");
+    return $toc.length ? $toc.text() || $toc.html() || "" : tocContent;
+  }
 
-        setStatus('Удаление…', 'loading');
-        try {
-            await Api.remove(bookId);
-            setStatus('Книга удалена', 'success');
-            setTimeout(() => location.href = '/', 500);
-        } catch (err) {
-            setStatus('Ошибка удаления: ' + err.message, 'error');
-        }
+  // ─────────────────────────────────────────────────────────
+  // 7. Обработчики событий
+  // ─────────────────────────────────────────────────────────
+  $saveBtn.on("click", saveBook);
+  $deleteBtn.on("click", deleteBook);
+
+  // Ctrl/Cmd + S — быстрое сохранение
+  $(document).on("keydown", function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+      e.preventDefault();
+      saveBook();
     }
+  });
 
-    // ─── Вспомогательные ───────────────────────────────
-    function setStatus(text, cls = '') {
-        statusEl.textContent = text;
-        statusEl.className = 'status ' + cls;
-    }
-
-    // Извлекаем содержимое <toc>…</toc> как HTML.
-    // Если тега <toc> нет — возвращаем строку как есть.
-    function extractTocHtml(tocContent) {
-        if (!tocContent) return '';
-        try {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(tocContent, 'application/xml');
-            const toc = doc.querySelector('toc');
-            if (toc) return toc.innerHTML;
-        } catch (_) { /* ignore */ }
-
-        // Фолбэк: пробуем как HTML
-        const tmp = document.createElement('div');
-        tmp.innerHTML = tocContent;
-        const toc = tmp.querySelector('toc');
-        return toc ? toc.innerHTML : tocContent;
-    }
-
-    // ─── События ───────────────────────────────────────
-    saveBtn.addEventListener('click', saveBook);
-    deleteBtn.addEventListener('click', deleteBook);
-
-    // ─── Старт ─────────────────────────────────────────
-    loadBook();
+  // ─────────────────────────────────────────────────────────
+  // 8. Старт
+  // ─────────────────────────────────────────────────────────
+  loadBook();
 });

@@ -1,108 +1,162 @@
-document.addEventListener('DOMContentLoaded', () => {
+$(function () {
+  // ─────────────────────────────────────────────────────────
+  // 1. Ссылки на элементы
+  // ─────────────────────────────────────────────────────────
+  const $tbody = $("#booksBody");
+  const $statusEl = $("#status");
+  const $searchInput = $("#searchInput");
+  const $searchBtn = $("#searchBtn");
+  const $clearBtn = $("#clearBtn");
 
-    const tbody       = document.getElementById('booksBody');
-    const statusEl    = document.getElementById('status');
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn   = document.getElementById('searchBtn');
-    const clearBtn    = document.getElementById('clearBtn');
+  // ─────────────────────────────────────────────────────────
+  // 2. Загрузка списка книг
+  // ─────────────────────────────────────────────────────────
+  function loadBooks(search) {
+    search = (search || "").trim();
 
-    // ─── Загрузка списка ───────────────────────────────
-    async function loadBooks(search = '') {
-        setStatus(search ? `Поиск: «${search}»…` : 'Загрузка…', 'loading');
-        try {
-            const books = await Api.list(search);
-            renderBooks(books);
-            setStatus(
-                books.length
-                    ? `Найдено книг: ${books.length}`
-                    : 'Ничего не найдено',
-                books.length ? 'success' : ''
-            );
-        } catch (err) {
-            setStatus('Ошибка загрузки: ' + err.message, 'error');
-            tbody.innerHTML = '';
-        }
-    }
+    setStatus(search ? `Поиск: «${search}»…` : "Загрузка…", "loading");
 
-    // ─── Отрисовка таблицы ─────────────────────────────
-    function renderBooks(books) {
+    Api.list(search)
+      .then(function (books) {
+        renderBooks(books);
+
         if (!books || books.length === 0) {
-            tbody.innerHTML = `
-                <tr class="empty-row">
-                    <td colspan="5">Книг пока нет. Добавьте первую!</td>
-                </tr>`;
-            return;
+          setStatus("Ничего не найдено", "");
+        } else {
+          setStatus(`Найдено книг: ${books.length}`, "success");
         }
+      })
+      .catch(function (err) {
+        setStatus("Ошибка загрузки: " + err.message, "error");
+        $tbody.empty();
+      });
+  }
 
-        tbody.innerHTML = books.map(b => `
-            <tr>
-                <td>${b.id}</td>
-                <td>${escapeHtml(b.title)}</td>
-                <td>${escapeHtml(b.author)}</td>
-                <td>${b.publishYear ?? '—'}</td>
-                <td>
-                    <a class="btn btn-small" href="/book.html?id=${b.id}">Открыть</a>
-                    <button class="btn btn-small btn-danger"
-                            data-delete="${b.id}"
-                            data-title="${escapeHtml(b.title)}">Удалить</button>
-                </td>
-            </tr>
-        `).join('');
-
-        // Обработчики удаления
-        tbody.querySelectorAll('[data-delete]').forEach(btn => {
-            btn.addEventListener('click', onDelete);
-        });
+  // ─────────────────────────────────────────────────────────
+  // 3. Отрисовка таблицы
+  // ─────────────────────────────────────────────────────────
+  function renderBooks(books) {
+    if (!books || books.length === 0) {
+      $tbody.html(
+        '<tr class="empty-row">' +
+          '<td colspan="5">Книг пока нет. Добавьте первую!</td>' +
+          "</tr>",
+      );
+      return;
     }
 
-    // ─── Удаление книги ────────────────────────────────
-    async function onDelete(e) {
-        const id    = e.target.dataset.delete;
-        const title = e.target.dataset.title;
+    // Собираем HTML одной строкой, чтобы не делать N манипуляций с DOM
+    const rows = books
+      .map(function (b) {
+        const year =
+          b.publishYear === null || b.publishYear === undefined
+            ? "—"
+            : b.publishYear;
 
-        if (!confirm(`Удалить книгу «${title}»?`)) return;
+        return (
+          "" +
+          "<tr>" +
+          `<td>${b.id}</td>` +
+          `<td>${escapeHtml(b.title)}</td>` +
+          `<td>${escapeHtml(b.author)}</td>` +
+          `<td>${year}</td>` +
+          "<td>" +
+          `<a class="btn btn-small" href="/book.html?id=${b.id}">Открыть</a> ` +
+          `<button class="btn btn-small btn-danger" ` +
+          `data-delete="${b.id}" ` +
+          `data-title="${escapeHtml(b.title)}">Удалить</button>` +
+          "</td>" +
+          "</tr>"
+        );
+      })
+      .join("");
 
-        try {
-            await Api.remove(id);
-            setStatus(`Книга «${title}» удалена`, 'success');
-            loadBooks(searchInput.value.trim());
-        } catch (err) {
-            setStatus('Ошибка удаления: ' + err.message, 'error');
-        }
+    $tbody.html(rows);
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // 4. Удаление книги (делегирование событий)
+  // ─────────────────────────────────────────────────────────
+  $tbody.on("click", "[data-delete]", function () {
+    const $btn = $(this);
+    const id = $btn.data("delete");
+    const title = $btn.data("title");
+
+    if (!confirm(`Удалить книгу «${title}»?`)) return;
+
+    $btn.prop("disabled", true);
+    setStatus(`Удаление «${title}»…`, "loading");
+
+    Api.remove(id)
+      .then(function () {
+        setStatus(`Книга «${title}» удалена`, "success");
+        loadBooks($searchInput.val());
+      })
+      .catch(function (err) {
+        setStatus("Ошибка удаления: " + err.message, "error");
+        $btn.prop("disabled", false);
+      });
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // 5. Вспомогательные
+  // ─────────────────────────────────────────────────────────
+  function setStatus(text, cls) {
+    $statusEl.text(text || "").attr("class", "status " + (cls || ""));
+  }
+
+  function escapeHtml(str) {
+    return String(str == null ? "" : str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  // Простейший debounce — чтобы не гонять запрос на каждое нажатие клавиши
+  function debounce(fn, delay) {
+    let timer = null;
+    return function () {
+      const args = arguments;
+      const ctx = this;
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        fn.apply(ctx, args);
+      }, delay);
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // 6. Обработчики событий
+  // ─────────────────────────────────────────────────────────
+  $searchBtn.on("click", function () {
+    loadBooks($searchInput.val());
+  });
+
+  $clearBtn.on("click", function () {
+    $searchInput.val("");
+    loadBooks("");
+  });
+
+  // Enter в поле поиска
+  $searchInput.on("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      loadBooks($searchInput.val());
     }
+  });
 
-    // ─── Вспомогательные ───────────────────────────────
-    function setStatus(text, cls = '') {
-        statusEl.textContent = text;
-        statusEl.className = 'status ' + cls;
-    }
+  // Живой поиск с debounce 400 мс (опционально)
+  $searchInput.on(
+    "input",
+    debounce(function () {
+      loadBooks($searchInput.val());
+    }, 400),
+  );
 
-    function escapeHtml(str) {
-        return String(str ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-    }
-
-    // ─── События ───────────────────────────────────────
-    searchBtn.addEventListener('click', () => {
-        loadBooks(searchInput.value.trim());
-    });
-
-    searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            loadBooks(searchInput.value.trim());
-        }
-    });
-
-    clearBtn.addEventListener('click', () => {
-        searchInput.value = '';
-        loadBooks();
-    });
-
-    // ─── Старт ─────────────────────────────────────────
-    loadBooks();
+  // ─────────────────────────────────────────────────────────
+  // 7. Старт
+  // ─────────────────────────────────────────────────────────
+  loadBooks("");
 });

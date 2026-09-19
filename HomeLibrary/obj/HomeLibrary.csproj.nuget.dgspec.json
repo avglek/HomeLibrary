@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\dev\\projects\\charp\\HomeLibrary\\HomeLibrary\\HomeLibrary.csproj": {}
+    "c:\\dev\\projects\\charp\\HomeLibrary\\HomeLibrary\\HomeLibrary.csproj": {}
   },
   "projects": {
-    "C:\\dev\\projects\\charp\\HomeLibrary\\HomeLibrary\\HomeLibrary.csproj": {
+    "c:\\dev\\projects\\charp\\HomeLibrary\\HomeLibrary\\HomeLibrary.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\dev\\projects\\charp\\HomeLibrary\\HomeLibrary\\HomeLibrary.csproj",
+        "projectUniqueName": "c:\\dev\\projects\\charp\\HomeLibrary\\HomeLibrary\\HomeLibrary.csproj",
         "projectName": "HomeLibrary",
-        "projectPath": "C:\\dev\\projects\\charp\\HomeLibrary\\HomeLibrary\\HomeLibrary.csproj",
+        "projectPath": "c:\\dev\\projects\\charp\\HomeLibrary\\HomeLibrary\\HomeLibrary.csproj",
         "packagesPath": "C:\\Users\\Aleksandr\\.nuget\\packages\\",
-        "outputPath": "C:\\dev\\projects\\charp\\HomeLibrary\\HomeLibrary\\obj\\",
+        "outputPath": "c:\\dev\\projects\\charp\\HomeLibrary\\HomeLibrary\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Aleksandr\\AppData\\Roaming\\NuGet\\NuGet.Config"

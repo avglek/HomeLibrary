@@ -1,47 +1,75 @@
-// Обёртки над fetch для всех обращений к /api/books
+// Обёртки над $.ajax для всех обращений к /api/books
 const Api = (() => {
-    const BASE = '/api/books';
+  const BASE = "/api/books";
 
-    async function handle(res) {
-        if (res.status === 204) return null;
-        const text = await res.text();
-        const data = text ? JSON.parse(text) : null;
-        if (!res.ok) {
-            const message = data?.message || `Ошибка ${res.status}`;
-            throw new Error(message);
-        }
-        return data;
-    }
-
-    return {
-        // GET /api/books  или  /api/books?search=...
-        list: (search = '') => {
-            const url = search
-                ? `${BASE}?search=${encodeURIComponent(search)}`
-                : BASE;
-            return fetch(url).then(handle);
+  // Универсальный вызов с единой обработкой ответа
+  function request(options) {
+    return $.ajax(
+      $.extend(
+        {
+          dataType: "json",
+          contentType: "application/json; charset=utf-8",
         },
+        options,
+      ),
+    ).then(
+      (data) => data,
+      (jqXHR) => {
+        // Пытаемся вытащить message из тела ответа
+        let message = `Ошибка ${jqXHR.status}`;
+        if (jqXHR.responseJSON?.message) {
+          message = jqXHR.responseJSON.message;
+        } else if (jqXHR.responseText) {
+          try {
+            const parsed = JSON.parse(jqXHR.responseText);
+            message = parsed.message || message;
+          } catch (_) {
+            /* ignore */
+          }
+        }
+        // Пробрасываем дальше как Error, чтобы .catch() работал единообразно
+        return $.Deferred().reject(new Error(message)).promise();
+      },
+    );
+  }
 
-        // GET /api/books/{id}
-        get: (id) => fetch(`${BASE}/${id}`).then(handle),
+  return {
+    // GET /api/books?search=...
+    list: (search = "") =>
+      request({
+        url: BASE,
+        method: "GET",
+        data: search ? { search } : {},
+      }),
 
-        // POST /api/books
-        create: (book) => fetch(BASE, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(book)
-        }).then(handle),
+    // GET /api/books/{id}
+    get: (id) =>
+      request({
+        url: `${BASE}/${id}`,
+        method: "GET",
+      }),
 
-        // PUT /api/books/{id}
-        update: (id, book) => fetch(`${BASE}/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(book)
-        }).then(handle),
+    // POST /api/books
+    create: (book) =>
+      request({
+        url: BASE,
+        method: "POST",
+        data: JSON.stringify(book),
+      }),
 
-        // DELETE /api/books/{id}
-        remove: (id) => fetch(`${BASE}/${id}`, {
-            method: 'DELETE'
-        }).then(handle)
-    };
+    // PUT /api/books/{id}
+    update: (id, book) =>
+      request({
+        url: `${BASE}/${id}`,
+        method: "PUT",
+        data: JSON.stringify(book),
+      }),
+
+    // DELETE /api/books/{id}
+    remove: (id) =>
+      request({
+        url: `${BASE}/${id}`,
+        method: "DELETE",
+      }),
+  };
 })();

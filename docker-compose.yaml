@@ -1,20 +1,19 @@
-version: '3.8'
+version: "3.8"
 
 services:
-
   # ─────────────────────────────────────────────────────────────
   # PostgreSQL
   # ─────────────────────────────────────────────────────────────
   db:
-    image: postgres:15
+    image: pull postgres:18-alpine
     container_name: homelibrary-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER:     postgres
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB:       homelibrary
+      POSTGRES_DB: homelibrary
       # Русская локаль — чтобы сортировка и регистр работали корректно
-      LANG:              ru_RU.utf8
+      LANG: ru_RU.utf8
     ports:
       - "5432:5432"
     volumes:
@@ -43,7 +42,7 @@ services:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS:        http://+:8080
+      ASPNETCORE_URLS: http://+:8080
       # Строка подключения: host = имя сервиса db внутри docker-сети
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=homelibrary;Username=postgres;Password=postgres"
 
