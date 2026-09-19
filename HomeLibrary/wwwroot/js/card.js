@@ -6,6 +6,7 @@ $(function () {
 
   $editor.trumbowyg({
     lang: "ru",
+    semantic: false,
     btns: [
       ["viewHTML"],
       ["undo", "redo"],
@@ -20,33 +21,8 @@ $(function () {
       ["removeformat"],
       ["fullscreen"],
     ],
-    // Если иконки не подгружаются — укажите путь явно:
-    // svgPath: '/lib/trumbowyg/ui/icons.svg',
     autogrow: true,
   });
-  // $("#editor").trumbowyg({
-  //   lang: "ru",
-  //   semantic: {
-  //     b: "strong",
-  //     i: "em",
-  //     s: "del",
-  //     strike: "del",
-  //     div: "div", // Ключевое: оставить div как div
-  //   },
-  //   btns: [
-  //     ["viewHTML"],
-  //     ["undo", "redo"],
-  //     ["formatting"],
-  //     ["strong", "em", "del"],
-  //     ["link"],
-  //     ["insertImage"],
-  //     ["justifyLeft", "justifyCenter", "justifyRight", "justifyFull"],
-  //     ["unorderedList", "orderedList"],
-  //     ["horizontalRule"],
-  //     ["removeformat"],
-  //     ["fullscreen"],
-  //   ],
-  // });
 
   // ─────────────────────────────────────────────────────────
   // 2. Ссылки на элементы формы (jQuery-объекты)
@@ -101,7 +77,6 @@ $(function () {
       return;
     }
 
-    // HTML из редактора
     const editorHtml = $editor.trumbowyg("html") || "";
 
     // Оборачиваем в XML с CDATA. Экранируем закрывающий ]]> на всякий случай.

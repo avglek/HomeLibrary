@@ -45,7 +45,7 @@ CREATE INDEX IF NOT EXISTS idx_books_year   ON books (publish_year);
 -- GIN-индекс по XML-оглавлению (помогает для contains-запросов)
 -- Если возникнут проблемы с производительностью поиска — этот индекс ускорит
 CREATE INDEX IF NOT EXISTS idx_books_toc_gin ON books
-    USING GIN ( (toc_content::text) gin_trgm_ops )
+    USING GIN ( (toc_content::text) gin_trgm_ops );
 
 -- ───────────────────────────────────────────────────────────────
 -- 4. Триггер автообновления updated_at
