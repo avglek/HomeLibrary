@@ -8,7 +8,8 @@
 -- ───────────────────────────────────────────────────────────────
 -- pgcrypto пригодится, если позже захотите UUID или шифрование
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
+-- Для gin_trgm_ops нужен pg_trgm
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- ───────────────────────────────────────────────────────────────
 -- 2. Таблица книг
@@ -44,11 +45,7 @@ CREATE INDEX IF NOT EXISTS idx_books_year   ON books (publish_year);
 -- GIN-индекс по XML-оглавлению (помогает для contains-запросов)
 -- Если возникнут проблемы с производительностью поиска — этот индекс ускорит
 CREATE INDEX IF NOT EXISTS idx_books_toc_gin ON books
-    USING GIN ( (toc_content::text) gin_trgm_ops );
-
--- Для gin_trgm_ops нужен pg_trgm
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
-
+    USING GIN ( (toc_content::text) gin_trgm_ops )
 
 -- ───────────────────────────────────────────────────────────────
 -- 4. Триггер автообновления updated_at
@@ -249,3 +246,4 @@ INSERT INTO books (title, author, publish_year, toc_content) VALUES
     1967,
     xmlparse(document '<div><h1>Часть первая</h1><h2>Глава 1. Никогда не разговаривайте с неизвестными</h2><h2>Глава 2. Понтий Пилат</h2><h1>Часть вторая</h1><h2>Глава 19. Маргарита</h2></div>')
 );
+COMMIT;

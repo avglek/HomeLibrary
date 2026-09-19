@@ -33,3 +33,6 @@ app.UseStaticFiles();
 app.MapBookEndpoints();
 
 app.Run();
+
+// Требуется для интеграционных тестов через WebApplicationFactory<Program>
+public partial class Program { }

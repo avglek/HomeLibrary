@@ -5,19 +5,20 @@ services:
   # PostgreSQL
   # ─────────────────────────────────────────────────────────────
   db:
-    image: pull postgres:18-alpine
+    image: postgres:18-alpine
     container_name: homelibrary-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: homelibrary
+      PGDATA: /var/lib/postgresql/data/pgdata
       # Русская локаль — чтобы сортировка и регистр работали корректно
       LANG: ru_RU.utf8
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data/pgdata
       # init.sql выполнится один раз при первом старте
       - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     healthcheck:

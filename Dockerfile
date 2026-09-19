@@ -1,7 +1,7 @@
 # ───────────────────────────────────────────────────────────────
 # Этап 1: сборка
 # ───────────────────────────────────────────────────────────────
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Сначала копируем только .csproj — чтобы кэшировать restore
@@ -16,7 +16,7 @@ RUN dotnet publish "HomeLibrary.csproj" -c Release -o /app/publish /p:UseAppHost
 # ───────────────────────────────────────────────────────────────
 # Этап 2: рантайм
 # ───────────────────────────────────────────────────────────────
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
 # Копируем опубликованные файлы
