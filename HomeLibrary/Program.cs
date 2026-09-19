@@ -9,6 +9,9 @@ builder.Services
     .AddApplication()
     .AddApiServices(builder.Configuration);
 
+// Включаем маппинг snake_case → PascalCase для Dapper
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
 var app = builder.Build();
 
 // ── Middleware ──

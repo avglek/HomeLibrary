@@ -24,6 +24,29 @@ $(function () {
     // svgPath: '/lib/trumbowyg/ui/icons.svg',
     autogrow: true,
   });
+  // $("#editor").trumbowyg({
+  //   lang: "ru",
+  //   semantic: {
+  //     b: "strong",
+  //     i: "em",
+  //     s: "del",
+  //     strike: "del",
+  //     div: "div", // Ключевое: оставить div как div
+  //   },
+  //   btns: [
+  //     ["viewHTML"],
+  //     ["undo", "redo"],
+  //     ["formatting"],
+  //     ["strong", "em", "del"],
+  //     ["link"],
+  //     ["insertImage"],
+  //     ["justifyLeft", "justifyCenter", "justifyRight", "justifyFull"],
+  //     ["unorderedList", "orderedList"],
+  //     ["horizontalRule"],
+  //     ["removeformat"],
+  //     ["fullscreen"],
+  //   ],
+  // });
 
   // ─────────────────────────────────────────────────────────
   // 2. Ссылки на элементы формы (jQuery-объекты)
@@ -83,7 +106,7 @@ $(function () {
 
     // Оборачиваем в XML с CDATA. Экранируем закрывающий ]]> на всякий случай.
     const safe = editorHtml.replace(/\]\]>/g, "]]]]><![CDATA[>");
-    const tocXml = `<toc><![CDATA[${safe}]]></toc>`;
+    const tocXml = `<div><![CDATA[${safe}]]></div>`;
 
     const payload = {
       title: title,
@@ -143,7 +166,7 @@ $(function () {
     $statusEl.text(text || "").attr("class", "status " + (cls || ""));
   }
 
-  // Извлекаем содержимое <toc>…</toc> как HTML
+  // Извлекаем содержимое <div>…</div> как HTML
   function extractTocHtml(tocContent) {
     if (!tocContent) return "";
     try {

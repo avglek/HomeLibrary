@@ -53,7 +53,10 @@ public sealed class BookRepository : IBookRepository
             "SELECT * FROM get_book_by_id(@Id)",
             new { Id = id },
             cancellationToken: ct);
-        return await connection.QuerySingleOrDefaultAsync<Book>(command);
+
+        var book = await connection.QuerySingleOrDefaultAsync<Book>(command);
+
+        return book;
     }
 
     public async Task<int> CreateAsync(BookCreateDto dto, CancellationToken ct = default)
