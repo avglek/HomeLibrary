@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Карточка книги — Домашняя библиотека</title>
+
+    <!-- Quill: WYSIWYG-редактор для оглавления -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+    <header class="header">
+        <h1 id="pageTitle">Новая книга</h1>
+        <a href="/" class="btn btn-secondary">← К списку</a>
+    </header>
+
+    <main class="container">
+        <form id="bookForm" class="card" onsubmit="return false;">
+
+            <div class="form-row">
+                <label for="title">Название *</label>
+                <input type="text" id="title" required maxlength="255">
+            </div>
+
+            <div class="form-row">
+                <label for="author">Автор *</label>
+                <input type="text" id="author" required maxlength="255">
+            </div>
+
+            <div class="form-row">
+                <label for="year">Год издания</label>
+                <input type="number" id="year" min="0" max="2100" placeholder="например, 1869">
+            </div>
+
+            <div class="form-row">
+                <label>Оглавление</label>
+                <div id="editor" class="editor-container"></div>
+                <small class="hint">
+                    Оглавление сохраняется как XML-документ.
+                    Можно использовать заголовки, списки, ссылки.
+                </small>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" id="saveBtn" class="btn btn-primary">💾 Сохранить</button>
+                <button type="button" id="deleteBtn" class="btn btn-danger" style="display:none;">
+                    🗑 Удалить
+                </button>
+                <a href="/" class="btn btn-secondary">Отмена</a>
+            </div>
+
+            <div id="status" class="status"></div>
+        </form>
+    </main>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/card.js"></script>
+</body>
+</html>

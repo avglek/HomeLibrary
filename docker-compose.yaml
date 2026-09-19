@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+
+  # ─────────────────────────────────────────────────────────────
+  # PostgreSQL
+  # ─────────────────────────────────────────────────────────────
+  db:
+    image: postgres:15
+    container_name: homelibrary-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB:       homelibrary
+      # Русская локаль — чтобы сортировка и регистр работали корректно
+      LANG:              ru_RU.utf8
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # init.sql выполнится один раз при первом старте
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d homelibrary"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ─────────────────────────────────────────────────────────────
+  # ASP.NET Core Minimal API
+  # ─────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: homelibrary-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS:        http://+:8080
+      # Строка подключения: host = имя сервиса db внутри docker-сети
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=homelibrary;Username=postgres;Password=postgres"
+
+volumes:
+  pgdata:
