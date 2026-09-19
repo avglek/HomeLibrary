@@ -150,7 +150,7 @@ docker-compose up --build
 
 **Требования:**
 
-- .NET 8 SDK
+- .NET 10 SDK
 - PostgreSQL 18 (установленный локально или в контейнере)
 
 **Шаги:**
